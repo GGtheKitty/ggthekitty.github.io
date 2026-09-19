@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'none';
+        script-src 'self';
+        style-src 'unsafe-inline';
+        img-src https://static1.e621.net https://static1.e926.net;
+      "
+    />
+    <style>
+      html,
+      body,
+      #media {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      #media {
+        display: block;
+        object-fit: contain;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="media" />
+    <script src="./media-renderer.js"></script>
+  </body>
+</html>
