@@ -20,17 +20,18 @@
         height: 100%;
         margin: 0;
         overflow: hidden;
-        background: transparent;
+        background-color: transparent;
       }
-
+      
       #media {
-        display: block;
-        object-fit: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
       }
     </style>
   </head>
   <body>
-    <img id="media" />
+    <div id="media"></div>
     <script src="./media-renderer.js"></script>
   </body>
 </html>
