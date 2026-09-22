@@ -25,13 +25,33 @@ window.addEventListener('message', (event) => {
     return;
   }
 
-  const image = document.getElementById('media');
-  image.style.objectFit = allowedFits.has(event.data.fit)
+  const media = document.getElementById('media');
+
+  const fit = allowedFits.has(event.data.fit)
     ? event.data.fit
     : 'contain';
-
-  image.referrerPolicy = 'strict-origin-when-cross-origin';
-  image.src = url.href;
+  
+  switch (fit) {
+    case 'cover':
+      media.style.backgroundSize = 'cover';
+      break;
+  
+    case 'fill':
+      media.style.backgroundSize = '100% 100%';
+      break;
+  
+    case 'none':
+      media.style.backgroundSize = 'auto';
+      break;
+  
+    case 'scale-down':
+    case 'contain':
+    default:
+      media.style.backgroundSize = 'contain';
+      break;
+  }
+  
+  media.style.backgroundImage = `url("${url.href}")`;
 });
 
 window.parent.postMessage({ type: 'media-renderer-ready' }, '*');
