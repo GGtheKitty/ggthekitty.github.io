@@ -476,10 +476,16 @@ window.wallpaperPropertyListener = {
 };
 
 if (Object.keys(window.initialWallpaperProperties || {}).length > 0) {
-  window.wallpaperPropertyListener.applyUserProperties(
-    window.initialWallpaperProperties
+  window.addEventListener(
+    'DOMContentLoaded',
+    () => {
+      window.wallpaperPropertyListener.applyUserProperties(
+        window.initialWallpaperProperties
+      );
+      window.initialWallpaperProperties = null;
+    },
+    { once: true }
   );
-  window.initialWallpaperProperties = null;
 }
 
 /**
