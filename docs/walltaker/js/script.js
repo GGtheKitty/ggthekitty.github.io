@@ -710,13 +710,37 @@ function GetRGBColor(customColor) {
 
 function clearBackground() {
   appState.bOpacity = '0';
-  $('#bVid').attr('src', '');
+  const videoElement = document.getElementById('bVid');
+  if (videoElement) {
+    videoElement.onerror = null;
+    videoElement.removeAttribute('src');
+    videoElement.removeAttribute('poster');
+    videoElement.load();
+  }
   $('#bImg').attr('src', '');
   SetHidden('#bVid');
   SetHidden('#bImg');
 }
 
-function UpdatePostUrl(url) {
+function showVideoFallback(videoElement, fallbackUrl) {
+  const mediaError = videoElement.error;
+  console.error(
+    'Video playback failed:',
+    mediaError ? `code ${mediaError.code}: ${mediaError.message}` : 'unknown error'
+  );
+
+  videoElement.onerror = null;
+  SetHidden('#bVid');
+
+  if (fallbackUrl?.trim()) {
+    $('#bImg').attr('src', fallbackUrl);
+    SetVisible('#bImg');
+  } else {
+    showWalltakerError('This video format is not supported by Wallpaper Engine.');
+  }
+}
+
+function UpdatePostUrl(url, fallbackUrl = '') {
   if (!url?.trim()) {
     clearBackground();
     return;
@@ -737,15 +761,24 @@ function UpdatePostUrl(url) {
   }
 
   if (['mp4', 'webm', 'ogg'].includes(filetype)) {
-    $('#bVid').attr('src', url);
+    const videoElement = document.getElementById('bVid');
+    videoElement.onerror = () =>
+      showVideoFallback(videoElement, fallbackUrl);
+    videoElement.poster = fallbackUrl || '';
+    videoElement.src = url;
     SetVisible('#bVid');
     SetHidden('#bImg');
     $('#bImg').attr('src', '');
+    videoElement.load();
   } else {
+    const videoElement = document.getElementById('bVid');
+    videoElement.onerror = null;
+    videoElement.removeAttribute('src');
+    videoElement.removeAttribute('poster');
+    videoElement.load();
     $('#bImg').attr('src', url);
     SetVisible('#bImg');
     SetHidden('#bVid');
-    $('#bVid').attr('src', '');
   }
 }
 
@@ -939,7 +972,7 @@ function setNewPost(data) {
   appState.e6States.overrideUpdate = true;
 
   console.log('Updating link data!');
-  UpdatePostUrl(data.post_url);
+  UpdatePostUrl(data.post_url, data.post_thumbnail_url);
 
   //String variables for areas
   const variables = areas.reduce((acc, area) => ({ ...acc, [area]: '' }), {});
