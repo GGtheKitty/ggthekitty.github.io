@@ -55,7 +55,7 @@
     </script>
     <!--stylesheets-->
     <link rel="stylesheet" href="./styles/var.css" type="text/css" />
-    <link rel="stylesheet" href="./styles/style.css?v=2" type="text/css" />
+    <link rel="stylesheet" href="./styles/style.css?v=3" type="text/css" />
     <!--imports-->
     <script type="text/javascript" src="./jQuery/jquery.js"></script>
     <!--fontawesome-->
@@ -63,7 +63,7 @@
     <script defer src="./fontawesome-free-6.7.2/js/all.js"></script>
     <!--scripts-->
     <script id="apiScript" type="text/javascript" src="./js/api.js?v=2"></script>
-    <script type="text/javascript" src="./js/script.js?v=5"></script>
+    <script type="text/javascript" src="./js/script.js?v=6"></script>
     <style id="dynCSS"></style>
   </head>
 
@@ -98,7 +98,13 @@
 
     <div id="canvas">
       <img id="bImg" class="bImg" style="visibility: hidden" />
-      <video id="bVid" class="bImg" style="visibility: hidden" autoplay>
+      <video
+        id="bVid"
+        class="bImg"
+        style="visibility: hidden"
+        autoplay
+        playsinline
+      >
         Video error
       </video>
     </div>

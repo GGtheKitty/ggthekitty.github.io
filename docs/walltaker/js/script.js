@@ -671,6 +671,37 @@ function initializeVideoState() {
   appState.videoMuted = appState.videoVolume === 0;
 }
 
+async function startVideoPlayback(videoElement) {
+  if (
+    !videoElement ||
+    settings.autoplay !== 'true' ||
+    !videoElement.currentSrc
+  ) {
+    return;
+  }
+
+  try {
+    await videoElement.play();
+  } catch (error) {
+    if (videoElement.muted) {
+      console.error('Video autoplay failed:', error);
+      return;
+    }
+
+    // Chromium may reject audible autoplay. Start muted so playback still
+    // begins; the native controls remain available for unmuting.
+    console.warn('Audible autoplay was blocked; retrying muted.', error);
+    videoElement.muted = true;
+    videoElement.defaultMuted = true;
+
+    try {
+      await videoElement.play();
+    } catch (mutedError) {
+      console.error('Muted video autoplay failed:', mutedError);
+    }
+  }
+}
+
 function SetVideoSettings(bVid) {
   if (!bVid) {
     console.error('[SetVideoSettings] element not found!');
@@ -684,8 +715,9 @@ function SetVideoSettings(bVid) {
   bVid.muted = appState.videoMuted;
   bVid.defaultMuted = appState.videoMuted;
   bVid.autoplay = settings.autoplay == 'true';
+  bVid.playsInline = true;
   bVid.loop = settings.loop == 'true';
-  bVid.load();
+  startVideoPlayback(bVid);
 }
 
 //takes WallpaperEngine color string and converts it into (usable) rgb/rgba format
@@ -713,6 +745,7 @@ function clearBackground() {
   const videoElement = document.getElementById('bVid');
   if (videoElement) {
     videoElement.onerror = null;
+    videoElement.oncanplay = null;
     videoElement.removeAttribute('src');
     videoElement.removeAttribute('poster');
     videoElement.load();
@@ -764,6 +797,7 @@ function UpdatePostUrl(url, fallbackUrl = '') {
     const videoElement = document.getElementById('bVid');
     videoElement.onerror = () =>
       showVideoFallback(videoElement, fallbackUrl);
+    videoElement.oncanplay = () => startVideoPlayback(videoElement);
     videoElement.poster = fallbackUrl || '';
     videoElement.src = url;
     SetVisible('#bVid');
@@ -773,6 +807,7 @@ function UpdatePostUrl(url, fallbackUrl = '') {
   } else {
     const videoElement = document.getElementById('bVid');
     videoElement.onerror = null;
+    videoElement.oncanplay = null;
     videoElement.removeAttribute('src');
     videoElement.removeAttribute('poster');
     videoElement.load();
@@ -1045,8 +1080,7 @@ function setbVideoEvents() {
     console.log('video loaded data');
     SetVisible('#bVid');
     SetHidden('#bImg');
-    //if(settings["autoplay"] == "true")
-    //elVid.play();
+    startVideoPlayback(this);
   });
 
   updateOnEvent('#bVid', 'volumechange', function () {
