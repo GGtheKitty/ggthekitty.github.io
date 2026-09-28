@@ -304,6 +304,11 @@ window.wallpaperPropertyListener = {
   applyUserProperties: function (properties) {
     console.log('loading properties');
 
+    if (window.redirectToHostedWallpaper) {
+      window.redirectToHostedWallpaper(properties);
+      return;
+    }
+
     let realoadSetter = false;
     let reloadCanvas = false;
 
@@ -469,6 +474,13 @@ window.wallpaperPropertyListener = {
     if (realoadSetter) watchSetterUser(appState.lastSetBy);
   },
 };
+
+if (Object.keys(window.initialWallpaperProperties || {}).length > 0) {
+  window.wallpaperPropertyListener.applyUserProperties(
+    window.initialWallpaperProperties
+  );
+  window.initialWallpaperProperties = null;
+}
 
 /**
  * Processes a property from the given properties object by its name and applies a callback function to its value.

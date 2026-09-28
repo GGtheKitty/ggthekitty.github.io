@@ -4,10 +4,53 @@
     <meta charset="UTF-8" />
     <title>Walltaker for Wallpaper Engine</title>
     <script>
+      const hostedWallpaperUrl =
+        'https://ggthekitty.github.io/walltaker/Index.html?v=2';
+
       if (window.location.protocol === 'file:') {
-        window.location.replace(
-          'https://ggthekitty.github.io/walltaker/Index.html?v=1'
+        // Wallpaper Engine applies its properties after the local document has
+        // loaded. Wait for that callback so they survive the HTTPS handoff.
+        window.redirectToHostedWallpaper = (properties) => {
+          const values = Object.fromEntries(
+            Object.entries(properties).map(([name, property]) => [
+              name,
+              property?.value,
+            ])
+          );
+          const payload = encodeURIComponent(JSON.stringify(values));
+          window.location.replace(`${hostedWallpaperUrl}#properties=${payload}`);
+        };
+      } else {
+        const initialProperties = {};
+        const browserLinkID = new URLSearchParams(window.location.search).get(
+          'linkID'
         );
+
+        if (browserLinkID) {
+          initialProperties.linkID = { value: browserLinkID };
+        }
+
+        if (window.location.hash.startsWith('#properties=')) {
+          try {
+            const values = JSON.parse(
+              decodeURIComponent(window.location.hash.slice(12))
+            );
+            for (const [name, value] of Object.entries(values)) {
+              initialProperties[name] = { value };
+            }
+
+            // Keep transferred settings out of browser history and referrers.
+            window.history.replaceState(
+              null,
+              '',
+              `${window.location.pathname}${window.location.search}`
+            );
+          } catch (error) {
+            console.error('Could not read Wallpaper Engine properties:', error);
+          }
+        }
+
+        window.initialWallpaperProperties = initialProperties;
       }
     </script>
     <!--stylesheets-->
