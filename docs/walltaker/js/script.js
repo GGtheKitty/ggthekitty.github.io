@@ -83,6 +83,35 @@ function clearSetterInfo() {
   $('#SetterInfo').html('');
 }
 
+async function loadCurrentWalltakerPost(intent, socket) {
+  try {
+    const data = await WalltakerApi.Request(
+      `/links/${encodeURIComponent(intent.linkID)}.json`
+    );
+
+    if (
+      appState.walltakerSocket !== socket ||
+      JSON.stringify(appState.walltakerSocketIntent) !== JSON.stringify(intent)
+    ) {
+      return;
+    }
+
+    if (!data?.post_url) {
+      showWalltakerError('The Walltaker link does not currently contain media.');
+      return;
+    }
+
+    setNewPost(data);
+  } catch (error) {
+    console.error('Could not load the current Walltaker post:', error);
+    if (appState.walltakerSocket === socket) {
+      showWalltakerError(
+        'Could not load the current Walltaker post. Check the link number and network connection.'
+      );
+    }
+  }
+}
+
 function watchSetterUser(username, force = false) {
   if (settings.showSetterData !== 'true') {
     clearSetterInfo();
@@ -208,6 +237,7 @@ function connectWalltakerSocket() {
     if (envelope.type === 'confirm_subscription') {
       console.log('Walltaker subscription confirmed');
       SetHidden('#rcenter-center');
+      loadCurrentWalltakerPost(intent, socket);
       watchSetterUser(appState.lastSetBy);
       return;
     }
