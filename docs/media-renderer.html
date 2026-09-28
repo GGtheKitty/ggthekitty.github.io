@@ -10,28 +10,42 @@
         script-src 'self';
         style-src 'unsafe-inline';
         img-src https://static1.e621.net https://static1.e926.net;
+        media-src https://static1.e621.net https://static1.e926.net;
       "
     />
     <style>
       html,
-      body,
-      #media {
+      body {
         width: 100%;
         height: 100%;
         margin: 0;
         overflow: hidden;
         background-color: transparent;
       }
-      
-      #media {
+
+      #media-image,
+      #media-video {
+        position: absolute;
+        inset: 0;
+        display: none;
+        width: 100%;
+        height: 100%;
+      }
+
+      #media-image {
         background-position: center;
         background-repeat: no-repeat;
         background-size: contain;
       }
+
+      #media-video {
+        object-fit: contain;
+      }
     </style>
   </head>
   <body>
-    <div id="media"></div>
+    <div id="media-image"></div>
+    <video id="media-video" playsinline></video>
     <script src="./media-renderer.js"></script>
   </body>
 </html>
