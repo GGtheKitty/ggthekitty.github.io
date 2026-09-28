@@ -177,6 +177,24 @@ setInterval(() => {
   window.parent.postMessage({ type: 'media-renderer-heartbeat' }, '*');
 }, 1000);
 
+const standaloneUrl = getMediaUrl(
+  new URLSearchParams(window.location.search).get('url')
+);
+if (standaloneUrl) {
+  const standaloneType = getMediaType(standaloneUrl);
+  if (standaloneType === 'image') {
+    setImage(standaloneUrl, 'contain');
+  } else if (standaloneType === 'video') {
+    setVideo(standaloneUrl, 'contain', {
+      controls: 'full',
+      autoplay: true,
+      loop: true,
+      volume: 1,
+      muted: false,
+    });
+  }
+}
+
 window.parent.postMessage(
   {
     type: 'media-renderer-ready',
