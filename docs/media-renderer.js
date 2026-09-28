@@ -173,6 +173,10 @@ video.addEventListener('error', () => {
   );
 });
 
+setInterval(() => {
+  window.parent.postMessage({ type: 'media-renderer-heartbeat' }, '*');
+}, 1000);
+
 window.parent.postMessage(
   {
     type: 'media-renderer-ready',
