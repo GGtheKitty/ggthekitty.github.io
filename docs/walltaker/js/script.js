@@ -112,7 +112,7 @@ async function loadCurrentWalltakerPost(intent, socket) {
   }
 }
 
-function watchSetterUser(username, force = false) {
+async function watchSetterUser(username, force = false) {
   if (settings.showSetterData !== 'true') {
     clearSetterInfo();
     return;
@@ -129,6 +129,10 @@ function watchSetterUser(username, force = false) {
     api_key: settings.api_key?.trim() || '',
   };
 
+  // Always show the setter's name. The API key is only needed for the
+  // additional friend/online/link details.
+  proccessSetterSetBy(null, trimmedUsername);
+
   if (
     !force &&
     appState.walltakerWatchedUser &&
@@ -138,21 +142,21 @@ function watchSetterUser(username, force = false) {
     return;
   }
 
-  if (!performWalltakerAction('watch_user', watchIntent)) {
-    return;
-  }
-
   appState.walltakerWatchedUser = watchIntent;
-}
+  const userData = await WalltakerApi.GetUserInfo(
+    trimmedUsername,
+    watchIntent.api_key
+  );
 
-function handleWalltakerUserMessage(data) {
-  if (!data.watching) {
-    clearSetterInfo();
+  if (
+    !appState.walltakerWatchedUser ||
+    appState.walltakerWatchedUser.username !== watchIntent.username ||
+    appState.walltakerWatchedUser.api_key !== watchIntent.api_key
+  ) {
     return;
   }
 
-  const userData = data.user;
-  proccessSetterSetBy(userData, userData?.username || appState.lastSetBy);
+  proccessSetterSetBy(userData, trimmedUsername);
   processSetterLinkInfos(userData);
 }
 
@@ -202,7 +206,7 @@ function connectWalltakerSocket() {
   const cableUrl = WalltakerApi_.GetCableUrl(serverURL);
   const identifier = JSON.stringify({
     channel: 'LinkChannel',
-    link_id: linkID,
+    id: linkID,
     client: getWalltakerClientName(),
   });
   appState.walltakerSubscriptionIdentifier = identifier;
@@ -249,11 +253,6 @@ function connectWalltakerSocket() {
 
     const data = envelope.message;
     if (!data) {
-      return;
-    }
-
-    if (data.type === 'user') {
-      handleWalltakerUserMessage(data);
       return;
     }
 
@@ -1311,7 +1310,7 @@ function proccessSetterSetBy(userData, username) {
 
   const showText = false;
 
-  const icon = userIcon || anonIcon;
+  const icon = username ? userIcon : anonIcon;
 
   $('#setBy').html(
     `${icon}${friendStatus}${

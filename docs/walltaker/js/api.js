@@ -261,6 +261,21 @@ class WalltakerApi_ {
 		};
 	}
 
+	async GetUserInfo(username, apiKey) {
+		if (!username?.trim() || !WalltakerApi_.IsAPIKeyValid(apiKey)) {
+			return null;
+		}
+
+		try {
+			return await this.Request(`/users/${encodeURIComponent(username)}.json`, "GET", {
+				api_key: apiKey,
+			});
+		} catch (error) {
+			console.error("Failed to fetch Walltaker user info:", error);
+			return null;
+		}
+	}
+
 	static NormalizeServerUrl(url) {
 		const fallback = WalltakerApi_.DEFAULT_SERVER_URL;
 		const rawUrl = url?.trim() || fallback;
